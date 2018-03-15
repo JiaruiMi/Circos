@@ -77,3 +77,37 @@ circos.genomicTrackPlotRegion(
 )
 circos.clear()
 View(beta)
+
+
+#========================================================================================
+#
+#            Learning how to use 'RCircos' package to draw Circos plot
+#
+#========================================================================================
+## Using demo datasets
+### Load packages and inner testing datasets
+
+library(RCircos)
+data(UCSC.HG38.Human.CytoBandIdeogram)   #导入内建人类染色体数据
+cyto.info <- UCSC.HG38.Human.CytoBandIdeogram
+RCircos.Set.Core.Components(cyto.info, chr.exclude=NULL,tracks.inside=10, tracks.outside=0 )
+#chr.exclude <- NULL;           设置不显示的染色体，如 c(1,3)          
+#cyto.info <- UCSC.HG19.Human.CytoBandIdeogram; 设置染色体数据
+#tracks.inside <- 10;    设置内部track 个数
+#tracks.outside <- 0;    设置外部track 个数 
+
+#导入内建人类染色体数据 (注意此处更换的人类参考基因组)
+a <- function(...){
+data(UCSC.HG19.Human.CytoBandIdeogram);
+head(UCSC.HG19.Human.CytoBandIdeogram);
+## 这里换了个参考基因组版本，请注意
+chr.exclude <- NULL;   #设置不显示的染色体，如 c(1,3)          
+cyto.info <- UCSC.HG19.Human.CytoBandIdeogram; 
+#设置染色体数据
+tracks.inside <- 10;   #设置内部track 个数
+tracks.outside <- 0;   #设置外部track 个数
+#导入上面四个基本参数
+RCircos.Set.Core.Components(cyto.info, chr.exclude, tracks.inside, tracks.outside); 
+RCircos.Set.Plot.Area()
+RCircos.Chromosome.Ideogram.Plot()}
+a()
