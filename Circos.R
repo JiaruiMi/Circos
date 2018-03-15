@@ -11,8 +11,8 @@
 
 ## First, let's hava a look at the testing datasets provided by circlize package
 library(circlize)
-bed <- generateRandomBed(nc = 1)
-head(bed)
+bed <- generateRandomBed(nc = 2)
+head(bed); dim(bed)
 ### In the 'circlize' input file, the first three columns are always the same in genomics data analysis
 ### The first three columns are chromosome, start, end.
 
@@ -22,41 +22,58 @@ circos.par(gap.degree = 4)  ## 设置各个板块之间的间隔
 circos.par(start.degree = 90)  ## 设置各个板块之间的起始角度
 
 ### Next, we need to initialize the plot
-circos.initializeWithIdeogram() # This step is like ggplot()
+circos.initializeWithIdeogram(plotType = NULL) # This step is like ggplot()
 
-### draw the points in the first track
+### Draw the points in the first track
 circos.genomicTrackPlotRegion(
-  bed, track.height = 0.1, ylim = c(-1,1),
+  bed, track.height = 0.1, ylim = c(-1,1), numeric.column = 4,
   panel.fun = function(region, value,...){
     circos.genomicPoints(
-      region, value, pch = 16, cex = 0.1)
+      region, value, numeric.column = 1, pch = 16, cex = 0.3)
   }
 )
 circos.clear() ## always remember to clear so that you can draw another plot
 
-## Second, Let's try a list of datasets
-bedlist = list(bed01 = generateRandomBed(nc = 2, nr = 200),
-               bed02 = generateRandomBed(nc = 2, nr = 200))
-bedlist
 
+
+### Draw lines
 circos.initializeWithIdeogram(plotType = NULL)
-circos.genomicTrackPlotRegion(
-  bedlist, track.height = 0.1, ylim = c(-1,1),
-  numeric.column = c(4,5),
-  panel.fun = function(region, value, ...){
-    i = getI(...)
-    circos.genomicPoints(
-      region, value, pch = 16, cex = 0.1, col = i)
+circos.genomicTrack(
+  bed, track.height = 0.1, ylim = c(-1,1), numeric.column = 4,
+  panel.fun = function(region, value,...){
+    circos.genomicLines(
+      region, value, numeric.column = 1)
   }
 )
+circos.clear()
+
+
+### Draw Rectangle
+circos.initializeWithIdeogram(plotType = NULL)
+circos.genomicTrack(
+  bed, track.height = 0.1, ylim = c(-1,1), numeric.column = 4,
+  panel.fun = function(region, value,...){
+    circos.genomicRect(
+      region, value, numeric.column = 1)
+  }
+)
+circos.clear()
 
 
 
-
-
-
-
-
-
-
-
+############### You can use your own data and have a try ##############
+setwd('/Users/mijiarui/R_bioinformatics_project/Master_thesis_project/circos')
+beta <- read.csv('beta_lincRNA.csv', header = T, row.names = 1)
+dim(beta); head(beta); 
+colnames(beta)[4] <- 'value1'
+## Draw points
+circos.initializeWithIdeogram(species = 'danRer10',chromosome.index = paste0("chr", 1:25))
+circos.genomicTrackPlotRegion(
+  beta, track.height = 0.1, ylim = c(-0.5,0.5), numeric.column = 4,
+  panel.fun = function(region, value,...){
+    circos.genomicPoints(
+      region, value, numeric.column = 1, pch = 16, cex = 0.3)
+  }
+)
+circos.clear()
+View(beta)
