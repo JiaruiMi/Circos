@@ -155,7 +155,7 @@ c <- function(...){
 }
 c()
 
-
+summary(RCircos.Heatmap.Data$A498)
 
 ### 加上散点图，用RCircos.Scatter.Plot函数来添加一个数据轨迹的扫描图
 data(RCircos.Scatter.Data)
@@ -221,3 +221,111 @@ h <- function(...){
 }
 h()
 
+
+################ use your own datasets to draw Rcircos plot ###############
+#### 整理表格最重要，三张表，chromosome，start，end，geneid
+#### chromosome需要加chr标签
+#### 删除所有没有必要的染色体和基因信息(chrKN...)
+#### 基因标签要优中选优，50-100足够了
+
+setwd('/Users/mijiarui/R_bioinformatics_project/Master_thesis_project/circos')
+library(RCircos)
+
+#### To draw Circos plot, we need to prepare three files, the file with chromosome information (if without
+#### a complete cytoband available in UCSC, you can edit it a little bit), bed file and link file
+#### The chromosome information is stored in danRer10_ref.csv(with chromosome, chromstart, chromend, band
+#### and stain, in total five columns);
+#### It is better to prepare file with different information into different files
+
+cytoBandIdelgram = read.csv('danRer10_ref.csv', header = T)
+chr.exclude <- NULL
+cyto.info <- cytoBandIdelgram
+tracks.inside <- 10
+tracks.outside <- 0
+RCircos.Set.Core.Components(cyto.info, chr.exclude, tracks.inside, tracks.outside)
+RCircos.List.Plot.Parameters() # show inner parameters, e.g. text.size, heatmap.color
+
+### Modifying RCircos core components
+rcircos.param <- RCircos.Get.Plot.Parameters()
+rcircos.param$text.size <- 0.5
+RCircos.Reset.Plot.Parameters(rcircos.param)  ## 确认重新设置，这个时候text.size = 0.5
+RCircos.List.Plot.Parameters()
+
+# pdf(file = 'RCircosOut.pdf', height = 800, weight = 800)
+RCircos.Set.Plot.Area()  ##设置画布区域，每次重新画图，哪怕是修改都有重新铺画板
+RCircos.Chromosome.Ideogram.Plot()  ## 画染色体的最外圈
+
+### Gene labels, the number should be limited, no more than 100
+#### There are some transcripts located in unknown gene areas, and we need to get rid of them in advance
+#### We use dplyr to pick rows randomly
+#### The chromosome information should have 'chr' label on it
+####
+
+library(dplyr)
+RCircos.Gene.Label.Data <- read.csv('beta_lincRNA.csv', header = T)
+RCircos.Gene.Label.Data <- sample_n(tbl = RCircos.Gene.Label.Data, size = 100, replace = F)
+table(RCircos.Gene.Label.Data$Chr)
+str(RCircos.Gene.Label.Data)
+name.col <- 4
+side <- 'in'
+track.num <- 1
+RCircos.Gene.Connector.Plot(genomic.data = RCircos.Gene.Label.Data, # 画连接器
+                            track.num = track.num, side = side)
+track.num <- 2
+RCircos.Gene.Name.Plot(gene.data = RCircos.Gene.Label.Data, 
+                       name.col = name.col, track.num = track.num, side = side)
+
+#### 注意，对于每一条染色体，都有一个最大基因标注数目的，我们可以使用RCircos.Get.Gene.Name.Plot.Parameters()
+#### 来查看，我们可以看到大部分基因只能标注2个，少数可以标注4个，只有4号染色体可以标注4个，所以如果一开始选择
+#### 标注的基因比较多的话，软件会给出提示警告，告诉作者超出数目的基因不会被标注出来; 所以建议作者在每次输入
+#### 数据的时候，需要对表格做出调整，只选择那些最重要的基因进行标注
+RCircos.Get.Gene.Name.Plot.Parameters()
+list <- RCircos.Get.Gene.Name.Plot.Parameters()
+sum(list$maxLabels) ## 最多标注58个基因
+
+
+### Heatmap, 所有的表格前四列非常明确，chromosome，start，end，geneid
+RCircos.Heatmap.Data <- read.csv('beta_lincRNA_expr.csv', header = T)
+data.col <- 5
+track.num <- 5 # 空一些距离，以免与label重叠
+side <- 'in'
+summary(RCircos.Heatmap.Data$beta_mean)
+RCircos.Heatmap.Plot(RCircos.Heatmap.Data, data.col = data.col, track.num = track.num, side = side, is.sorted = F)
+
+
+### Scatterplot
+RCircos.Scatter.Data <- read.csv('beta_lincRNA_expr.csv', header = T)
+data.col <- 5
+track.num <- 6
+side <- 'in'
+by.fold <- 1 ## 设定1为颜色区分, by.fold > 1 为红色，< -1为蓝色，-1~1为黑色，可以用来标出高表达；默认值是0
+RCircos.Scatter.Plot(scatter.data = RCircos.Scatter.Data, data.col = data.col,
+                     track.num = track.num, by.fold = by.fold, is.sorted = F)
+
+
+### Line
+RCircos.Line.Data <- read.csv('beta_lincRNA_expr.csv', header = T)
+data.col <- 5
+track.num <- 7
+side <- 'in'
+RCircos.Line.Plot(line.data = RCircos.Line.Data, data.col = data.col,
+                     track.num = track.num, is.sorted = F)
+
+
+### Histogram
+RCircos.Histogram.Data <- read.csv('beta_lincRNA_expr.csv', header = T)
+data.col <- 5
+track.num <- 8
+side <- 'in'
+RCircos.Histogram.Plot(hist.data = RCircos.Histogram.Data, data.col = data.col, track.num = track.num, side = side)
+
+
+### link
+RCircos.Link.Data <- read.csv('link.csv', header = T)
+track.num <- 10
+RCircos.Link.Plot(RCircos.Link.Data, track.num = track.num, by.chromosome = F, is.sorted = F) ## by.chromosome = T, 染色体之间是蓝色，染色体内部是红色，建议false
+
+
+### Ribbon (一般需要10MB以上才有必要用ribbon)
+RCircos.Ribbon.Data <- read.csv('ribbon.csv', header = T)
+RCircos.Ribbon.Plot(ribbon.data = RCircos.Ribbon.Data, track.num = 10, is.sorted = F)
