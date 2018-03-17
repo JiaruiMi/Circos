@@ -223,10 +223,10 @@ h()
 
 
 ################ use your own datasets to draw Rcircos plot ###############
-#### 整理表格最重要，三张表，chromosome，start，end，geneid
-#### chromosome需要加chr标签
-#### 删除所有没有必要的染色体和基因信息(chrKN...)
-#### 基因标签要优中选优，50-100足够了
+#### 1, 整理表格最重要，三张表，chromosome，start，end，geneid
+#### 2, chromosome需要加chr标签
+#### 3, 删除所有没有必要的染色体和基因信息(chrKN...)
+#### 4, 基因标签要优中选优，50-100足够了
 
 setwd('/Users/mijiarui/R_bioinformatics_project/Master_thesis_project/circos')
 library(RCircos)
