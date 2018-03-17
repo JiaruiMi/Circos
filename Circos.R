@@ -223,7 +223,9 @@ h()
 
 
 ################ use your own datasets to draw Rcircos plot ###############
-#### 1, 整理表格最重要，三张表，chromosome，start，end，geneid
+#### 1, 整理表格最重要，三张表（染色体长度文件，txt文件和link文件），染色体长度文件是chr，start，end，band(和chr一样)，stain
+#### txt文件前四列是chromosome，start，end，geneid（name），后面可以跟一列或者多列，用于画heatmap，scatterplot，lineplot，histogram
+#### link文件是chr1，start1，end1，chr2，start2，end2这样一共六列
 #### 2, chromosome需要加chr标签
 #### 3, 删除所有没有必要的染色体和基因信息(chrKN...)
 #### 4, 基因标签要优中选优，50-100足够了
