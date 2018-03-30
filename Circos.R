@@ -331,3 +331,105 @@ RCircos.Link.Plot(RCircos.Link.Data, track.num = track.num, by.chromosome = F, i
 ### Ribbon (一般需要10MB以上才有必要用ribbon)
 RCircos.Ribbon.Data <- read.csv('ribbon.csv', header = T)
 RCircos.Ribbon.Plot(ribbon.data = RCircos.Ribbon.Data, track.num = 10, is.sorted = F)
+
+
+
+#======================================================================================
+#
+# Let's include data from different cell types, the order is acinal, alpha, beta, delta
+#
+#======================================================================================
+
+setwd('/Users/mijiarui/R_bioinformatics_project/Master_thesis_project/circos')
+library(RCircos)
+
+#### To draw Circos plot, we need to prepare three files, the file with chromosome information (if without
+#### a complete cytoband available in UCSC, you can edit it a little bit), bed file and link file
+#### The chromosome information is stored in danRer10_ref.csv(with chromosome, chromstart, chromend, band
+#### and stain, in total five columns);
+#### It is better to prepare file with different information into different files
+
+cytoBandIdelgram = read.csv('danRer10_ref.csv', header = T)
+chr.exclude <- NULL
+cyto.info <- cytoBandIdelgram
+tracks.inside <- 10
+tracks.outside <- 0
+RCircos.Set.Core.Components(cyto.info, chr.exclude, tracks.inside, tracks.outside)
+RCircos.List.Plot.Parameters() # show inner parameters, e.g. text.size, heatmap.color
+
+### Modifying RCircos core components
+rcircos.param <- RCircos.Get.Plot.Parameters()
+rcircos.param$text.size <- 0.55
+RCircos.Reset.Plot.Parameters(rcircos.param)  ## 确认重新设置，这个时候text.size = 0.5
+RCircos.List.Plot.Parameters()
+
+# pdf(file = 'RCircosOut.pdf', height = 800, weight = 800)
+RCircos.Set.Plot.Area()  ##设置画布区域，每次重新画图，哪怕是修改都有重新铺画板
+RCircos.Chromosome.Ideogram.Plot()  ## 画染色体的最外圈
+
+### Gene labels, the number should be limited, no more than 100
+#### There are some transcripts located in unknown gene areas, and we need to get rid of them in advance
+#### We use dplyr to pick rows randomly
+#### The chromosome information should have 'chr' label on it
+####
+
+library(dplyr)
+RCircos.Gene.Label.Data <- read.csv('beta_lincRNA_DGE.csv', header = T)
+table(RCircos.Gene.Label.Data$Chr)
+str(RCircos.Gene.Label.Data)
+name.col <- 4
+side <- 'in'
+track.num <- 1
+RCircos.Gene.Connector.Plot(genomic.data = RCircos.Gene.Label.Data, # 画连接器
+                            track.num = track.num, side = side)
+track.num <- 2
+RCircos.Gene.Name.Plot(gene.data = RCircos.Gene.Label.Data, 
+                       name.col = name.col, track.num = track.num, side = side)
+
+#### 注意，对于每一条染色体，都有一个最大基因标注数目的，我们可以使用RCircos.Get.Gene.Name.Plot.Parameters()
+#### 来查看，我们可以看到大部分基因只能标注2个，少数可以标注4个，只有4号染色体可以标注4个，所以如果一开始选择
+#### 标注的基因比较多的话，软件会给出提示警告，告诉作者超出数目的基因不会被标注出来; 所以建议作者在每次输入
+#### 数据的时候，需要对表格做出调整，只选择那些最重要的基因进行标注
+RCircos.Get.Gene.Name.Plot.Parameters()
+list <- RCircos.Get.Gene.Name.Plot.Parameters()
+sum(list$maxLabels) ## 最多标注58个基因
+
+
+
+### beta-cell
+RCircos.Scatter.Data <- read.csv('beta_lincRNA_expr.csv', header = T)
+data.col <- 5
+track.num <- 5
+side <- 'in'
+by.fold <- 1 ## 设定1为颜色区分, by.fold > 1 为红色，< -1为蓝色，-1~1为黑色，可以用来标出高表达；默认值是0
+RCircos.Scatter.Plot(scatter.data = RCircos.Scatter.Data, data.col = data.col,
+                     track.num = track.num, by.fold = by.fold, is.sorted = F)
+
+
+### alpha
+RCircos.scatter.Data1 <- read.table('alpha_lincRNA.txt', header = F, sep = ' ', quote = "")
+data.col <- 4
+track.num <- 6
+side <- 'in'
+by.fold <- 1 ## 设定1为颜色区分, by.fold > 1 为红色，< -1为蓝色，-1~1为黑色，可以用来标出高表达；默认值是0
+RCircos.Scatter.Plot(scatter.data = RCircos.scatter.Data1, data.col = data.col,
+                     track.num = track.num, by.fold = by.fold, is.sorted = F)
+
+
+### delta
+RCircos.scatter.Data2 <- read.table('delta_lincRNA.txt', header = F, sep = ' ', quote = "")
+data.col <- 4
+track.num <- 7
+side <- 'in'
+by.fold <- 1 ## 设定1为颜色区分, by.fold > 1 为红色，< -1为蓝色，-1~1为黑色，可以用来标出高表达；默认值是0
+RCircos.Scatter.Plot(scatter.data = RCircos.scatter.Data2, data.col = data.col,
+                     track.num = track.num, by.fold = by.fold, is.sorted = F)
+
+### acinal
+RCircos.scatter.Data3 <- read.table('acinal_lincRNA.txt', header = F, sep = ' ', quote = "")
+data.col <- 4
+track.num <- 8
+side <- 'in'
+by.fold <- 1 ## 设定1为颜色区分, by.fold > 1 为红色，< -1为蓝色，-1~1为黑色，可以用来标出高表达；默认值是0
+RCircos.Scatter.Plot(scatter.data = RCircos.scatter.Data3, data.col = data.col,
+                     track.num = track.num, by.fold = by.fold, is.sorted = F)
